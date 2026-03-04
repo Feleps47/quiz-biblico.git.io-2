@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jogo Bíblico - Mulheres da Bíblia</title>
+
+<style>
+body{
+    margin:0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to top,#dff6ff,#fef9d7);
+}
+
+.container{
+    max-width:700px;
+    margin:30px auto;
+    padding:25px;
+    background:white;
+    border-radius:25px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.1);
+}
+
+h1{text-align:center;color:#4a6fa5;}
+
+.pergunta{
+    background:#f0f8ff;
+    padding:15px;
+    margin:15px 0;
+    border-radius:15px;
+    transition:0.3s;
+}
+
+.pergunta.correta{background:#d4ffd4;}
+.pergunta.errada{background:#ffd6d6;}
+
+label{display:block;margin:6px 0;cursor:pointer;}
+
+button{
+    width:100%;
+    padding:12px;
+    background:#4a90e2;
+    border:none;
+    border-radius:15px;
+    font-size:16px;
+    color:white;
+    cursor:pointer;
+}
+
+button:hover{background:#357ABD;}
+
+#resultado{text-align:center;margin-top:20px;font-size:20px;}
+
+.faseTitulo{
+    text-align:center;
+    font-weight:bold;
+    margin-bottom:10px;
+    color:#ff8c42;
+}
+
+.confete{
+    position:fixed;
+    width:8px;
+    height:8px;
+    top:0;
+    animation:cair 2s linear forwards;
+}
+
+@keyframes cair{
+    to{transform:translateY(100vh) rotate(720deg);opacity:0;}
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>🌟 Jogo Bíblico por Fases 🌟</h1>
+<div class="faseTitulo" id="faseTitulo"></div>
+<div id="quiz"></div>
+<button onclick="corrigir()">Responder Fase</button>
+<div id="resultado"></div>
+</div>
+
+<audio id="somAcerto" src="https://www.soundjay.com/human/applause-8.mp3"></audio>
+<audio id="somErro" src="https://www.soundjay.com/misc/sad-trombone-01.mp3"></audio>
+
+<script>
+const perguntas = [
+{p:"1) Sara aprendeu que:",a:"Desistir",b:"O tempo de Deus é perfeito",c:"Duvidar",d:"Reclamar",r:"b"},
+{p:"2) Isaque prova que Deus:",a:"Esquece",b:"É fiel",c:"Falha",d:"Demora",r:"b"},
+{p:"3) Ana buscou:",a:"Magia",b:"Oração sincera",c:"Amuletos",d:"Feitiço",r:"b"},
+{p:"4) Deus deu a Ana:",a:"Samuel",b:"Davi",c:"José",d:"Isaque",r:"a"},
+{p:"5) Temos livre acesso a Deus por:",a:"Dinheiro",b:"Oração",c:"Rituais",d:"Templo",r:"b"},
+
+{p:"6) Maria se chamou:",a:"Rainha",b:"Serva do Senhor",c:"Princesa",d:"Sacerdotisa",r:"b"},
+{p:"7) Maior alegria do cristão:",a:"Fama",b:"Dizer sim a Deus",c:"Riqueza",d:"Poder",r:"b"},
+{p:"8) Ester estava no palácio:",a:"Por acaso",b:"Para um tempo como este",c:"Por sorte",d:"Sem motivo",r:"b"},
+{p:"9) Ester antes de agir:",a:"Fugiu",b:"Jejuou e orou",c:"Ignorou",d:"Brigou",r:"b"},
+{p:"10) Deus está:",a:"Ausente",b:"No controle da história",c:"Dormindo",d:"Distante",r:"b"},
+
+{p:"11) Débora liderava ouvindo:",a:"O povo",b:"A voz de Deus",c:"Reis",d:"Exército",r:"b"},
+{p:"12) Liderança verdadeira nasce da:",a:"Força",b:"Dependência de Deus",c:"Riqueza",d:"Política",r:"b"},
+{p:"13) Dorcas demonstrava fé:",a:"Falando",b:"Ajudando necessitados",c:"Criticando",d:"Isolando-se",r:"b"},
+{p:"14) Dorcas fazia boas obras porque:",a:"Queria fama",b:"Já era salva",c:"Obrigação",d:"Medo",r:"b"},
+{p:"15) Fé verdadeira produz:",a:"Orgulho",b:"Amor e serviço",c:"Competição",d:"Vaidade",r:"b"},
+
+{p:"16) Abigail foi:",a:"Impulsiva",b:"Prudente e pacificadora",c:"Orgulhosa",d:"Indiferente",r:"b"},
+{p:"17) Ela evitou o mal com:",a:"Espada",b:"Palavras sábias",c:"Gritos",d:"Fuga",r:"b"},
+{p:"18) Devemos buscar:",a:"Conflito",b:"Paz",c:"Vingança",d:"Orgulho",r:"b"},
+{p:"19) Sara creu mesmo sendo:",a:"Jovem",b:"Idosa",c:"Rainha",d:"Rica",r:"b"},
+{p:"20) Todas ensinam a:",a:"Desistir",b:"Confiar, orar e obedecer",c:"Competir",d:"Buscar fama",r:"b"},
+];
+
+let fase = 1;
+let inicio = 0;
+
+function carregarFase(){
+    document.getElementById("quiz").innerHTML="";
+    document.getElementById("resultado").innerHTML="";
+    document.getElementById("faseTitulo").innerText="Fase "+fase+" ⭐";
+
+    for(let i=inicio;i<inicio+5;i++){
+        let q=perguntas[i];
+        document.getElementById("quiz").innerHTML+=`
+        <div class="pergunta">
+        <h3>${q.p}</h3>
+        <label><input type="radio" name="q${i}" value="a"> A) ${q.a}</label>
+        <label><input type="radio" name="q${i}" value="b"> B) ${q.b}</label>
+        <label><input type="radio" name="q${i}" value="c"> C) ${q.c}</label>
+        <label><input type="radio" name="q${i}" value="d"> D) ${q.d}</label>
+        </div>`;
+    }
+}
+
+function soltarConfete(){
+    for(let i=0;i<30;i++){
+        let c=document.createElement("div");
+        c.classList.add("confete");
+        c.style.left=Math.random()*100+"vw";
+        c.style.backgroundColor=["#4a90e2","#50c878","#ffcc00","#ff8c42"][Math.floor(Math.random()*4)];
+        document.body.appendChild(c);
+        setTimeout(()=>c.remove(),2000);
+    }
+}
+
+function corrigir(){
+    let pontos=0;
+    for(let i=inicio;i<inicio+5;i++){
+        let selecionada=document.querySelector('input[name="q'+i+'"]:checked');
+        if(selecionada && selecionada.value===perguntas[i].r){
+            pontos++;
+            document.getElementById("somAcerto").play();
+            soltarConfete();
+        }else{
+            document.getElementById("somErro").play();
+        }
+    }
+
+    if(pontos>=3){
+        fase++;
+        inicio+=5;
+        if(fase<=4){
+            document.getElementById("resultado").innerHTML="🎉 Você passou para a próxima fase!";
+            setTimeout(carregarFase,2000);
+        }else{
+            document.getElementById("resultado").innerHTML=
+            "🏆 PARABÉNS! Você concluiu o jogo!";
+        }
+    }else{
+        document.getElementById("resultado").innerHTML=
+        "😢 Você precisa acertar pelo menos 3 para avançar. Tente novamente!";
+    }
+}
+
+carregarFase();
+</script>
+
+</body>
+</html>
